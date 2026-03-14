@@ -88,10 +88,16 @@ def scraper_logs():
 # ── Trigger scraping ───────────────────────────────────────────────────────────
 @app.route("/api/scraper/run", methods=["POST"])
 def trigger_scraping():
-    source = request.args.get("source") or (request.json or {}).get("source")
+    source = request.args.get("source")
+    if not source:
+        try:
+            body = request.get_json(silent=True) or {}
+            source = body.get("source")
+        except Exception:
+            source = None
     thread = threading.Thread(target=_run_scraping, args=(source,), daemon=True)
     thread.start()
-    return jsonify({"message": f"Scraping iniciado{'para ' + source if source else ' (todos los scrapers)'}"})
+    return jsonify({"message": f"Scraping iniciado"})
 
 
 def _run_scraping(source=None):
@@ -105,6 +111,13 @@ def _run_scraping(source=None):
         except Exception as e:
             logging.error(f"Error en scraper {ScraperClass.__name__}: {e}")
 
+
+# Inicializar DB y arrancar auto-scraping
+db_module.init_db()
+logger.info("Base de datos inicializada")
+_t = threading.Thread(target=_auto_scraping_loop, daemon=True)
+_t.start()
+logger.info(f"Auto-scraping activado cada {SCRAPING_INTERVAL_MINUTES} minutos")
 
 if __name__ == "__main__":
     import os
