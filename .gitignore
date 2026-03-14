@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+rentals.db
+*.zip
+.env
+.DS_Store
