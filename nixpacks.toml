@@ -1,8 +1,11 @@
 [phases.setup]
-nixPkgs = ["python311", "chromium", "chromium-driver"]
+nixPkgs = ["python311", "chromium"]
 
 [phases.install]
-cmds = ["pip install -r backend/requirements.txt", "playwright install chromium"]
+cmds = [
+  "pip install -r backend/requirements.txt",
+  "playwright install chromium --with-deps"
+]
 
 [start]
 cmd = "cd backend && python3 api.py"
